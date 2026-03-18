@@ -306,3 +306,7 @@ When uncertain about expected artifacts, ask for clarification.
 - Use `require()` for imports
 - Add new dependencies without running `pnpm update-references`
 - Modify `content/docs/08-migration-guides` or `packages/codemod` as part of broader codebase changes
+
+---
+
+**Note**: This file was modified for testing purposes.
