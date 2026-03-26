@@ -30,7 +30,7 @@ By default, the AI SDK uses the [Vercel AI Gateway](https://vercel.com/docs/ai-g
 
 ```ts
 const result = await generateText({
-  model: 'anthropic/claude-opus-4.5', // or 'openai/gpt-5.4', 'google/gemini-3-flash', etc.
+  model: 'anthropic/claude-3-5-sonnet', // or 'openai/gpt-4o', 'google/gemini-pro', etc.
   prompt: 'Hello!',
 });
 ```
@@ -45,7 +45,7 @@ npm install @ai-sdk/openai @ai-sdk/anthropic @ai-sdk/google
 import { anthropic } from '@ai-sdk/anthropic';
 
 const result = await generateText({
-  model: anthropic('claude-opus-4-5-20250414'), // or openai('gpt-5.4'), google('gemini-3-flash'), etc.
+  model: anthropic('claude-3-5-sonnet-20241022'), // or openai('gpt-4o'), google('gemini-pro'), etc.
   prompt: 'Hello!',
 });
 ```
@@ -54,21 +54,25 @@ const result = await generateText({
 
 ### Generating Text
 
+Using Vercel AI Gateway:
+
 ```ts
 import { generateText } from 'ai';
 
 const { text } = await generateText({
-  model: 'openai/gpt-5', // use Vercel AI Gateway
+  model: 'openai/gpt-4o', // use Vercel AI Gateway
   prompt: 'What is an agent?',
 });
 ```
+
+Using provider SDK directly:
 
 ```ts
 import { generateText } from 'ai';
 import { openai } from '@ai-sdk/openai';
 
 const { text } = await generateText({
-  model: openai('gpt-5'), // use OpenAI Responses API
+  model: openai('gpt-4o'), // use OpenAI API directly
   prompt: 'What is an agent?',
 });
 ```
@@ -76,20 +80,19 @@ const { text } = await generateText({
 ### Generating Structured Data
 
 ```ts
-import { generateText, Output } from 'ai';
+import { generateText } from 'ai';
 import { z } from 'zod';
 
 const { output } = await generateText({
-  model: 'openai/gpt-5',
-  output: Output.object({
-    schema: z.object({
-      recipe: z.object({
-        name: z.string(),
-        ingredients: z.array(
-          z.object({ name: z.string(), amount: z.string() }),
-        ),
-        steps: z.array(z.string()),
-      }),
+  model: 'openai/gpt-4o',
+  output: 'object',
+  schema: z.object({
+    recipe: z.object({
+      name: z.string(),
+      ingredients: z.array(
+        z.object({ name: z.string(), amount: z.string() }),
+      ),
+      steps: z.array(z.string()),
     }),
   }),
   prompt: 'Generate a lasagna recipe.',
@@ -102,7 +105,7 @@ const { output } = await generateText({
 import { ToolLoopAgent } from 'ai';
 
 const sandboxAgent = new ToolLoopAgent({
-  model: 'openai/gpt-5',
+  model: 'openai/gpt-4o',
   system: 'You are an agent with access to a shell environment.',
   tools: {
     shell: openai.tools.localShell({
@@ -134,7 +137,7 @@ import { openai } from '@ai-sdk/openai';
 import { ToolLoopAgent, InferAgentUIMessage } from 'ai';
 
 export const imageGenerationAgent = new ToolLoopAgent({
-  model: openai('gpt-5'),
+  model: openai('gpt-4o'),
   tools: {
     generateImage: openai.tools.imageGeneration({
       partialImages: 3,
@@ -179,6 +182,8 @@ export default function ImageGenerationView({
       return <div>Generating image...</div>;
     case 'output-available':
       return <img src={`data:image/png;base64,${invocation.output.result}`} />;
+    default:
+      return null;
   }
 }
 ```
@@ -188,6 +193,7 @@ export default function ImageGenerationView({
 ```tsx
 'use client';
 
+import { useState } from 'react';
 import { ImageGenerationAgentMessage } from '@/agent/image-generation-agent';
 import ImageGenerationView from '@/component/image-generation-view';
 import { useChat } from '@ai-sdk/react';
@@ -197,7 +203,7 @@ export default function Page() {
     useChat<ImageGenerationAgentMessage>();
 
   const [input, setInput] = useState('');
-  const handleSubmit = e => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage({ text: input });
     setInput('');
